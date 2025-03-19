@@ -70,6 +70,11 @@ Many linear models are calculated in R using the lm() function. We'll look at ho
 #### Visualization
 
 ```{r}
+library(GGally)
+GGally::ggpairs(dataset, columns=c('Sales','Adverts','Airplay','Image'), lower = list(continuous = "smooth"))
+```
+
+```{r}
 ggplot(dataset, aes(x = Adverts, y = Sales)) +
   geom_point() +
   stat_smooth(method = lm)
@@ -78,7 +83,7 @@ ggplot(dataset, aes(x = Adverts, y = Sales)) +
 #### Computation
 
 ```{r}
-model <- lm(formula = Sales ~ Adverts, data = dataset)
+model <- lm(formula = Sales ~ Adverts + Airplay + Image, data = dataset)
 model
 ```
 
@@ -93,7 +98,7 @@ summary(model)
 You might notice lm() does not provide the standardized residuals. Those must me calculated separately.
 
 ```{r}
-standardized = lm(scale(Sales) ~ scale(Adverts), data=dataset)
+standardized = lm(scale(Sales) ~ scale(Adverts) + scale(Airplay) + scale(Image), data=dataset)
 summary(standardized)
 ```
 
@@ -106,8 +111,9 @@ Compare the output from the lm() function with the output from the function in t
 jmv::linReg(
   data = dataset,
   dep = Sales,
-  covs = Adverts,
-  blocks = list(list("Adverts")),
+  covs = vars(Adverts, Airplay, Image),
+  blocks = list(list("Adverts"),
+                list("Airplay","Image")),
   refLevels = list(),
   modelTest = TRUE,
   anova = TRUE,
